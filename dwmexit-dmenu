@@ -37,9 +37,12 @@ while true; do
 
     case "$ACTION" in
         Suspend)
-            show_notification "The system is now suspending!"
-            sleep 3
-            systemctl suspend
+            if confirm_action "The system is now suspending!" "Are you sure you want to suspend the system?"; then
+                show_notification "The system is now suspending!"
+                sleep 3
+                systemctl suspend
+                exit 0
+            fi
             ;;
         Kill\ DWM)
             if confirm_action "DWM is now being killed!" "Are you sure you want to kill DWM?"; then
