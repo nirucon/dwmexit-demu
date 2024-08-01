@@ -21,3 +21,7 @@ Select the desired action using dmenu, and follow the prompts for confirmation w
 
 - dmenu: A dynamic menu for X.
 - notify-send: A command-line tool for sending desktop notifications.
+
+# License
+
+Feel free to use and modify, donate if you want :) https://www.paypal.com/paypalme/nicklasrudolfsson
