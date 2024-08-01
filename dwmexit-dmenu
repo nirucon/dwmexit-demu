@@ -9,7 +9,7 @@ show_notification() {
     notify-send "Notification" "$message" -t 3000
 }
 
-# Prompt user for confirmation
+# Function to prompt user for confirmation
 confirm_action() {
     local action="$1"
     local message="$2"
@@ -31,47 +31,45 @@ confirm_action() {
     done
 }
 
-# Main menu options
+# Function to execute the chosen action with confirmation
+execute_action() {
+    local action_message="$1"
+    local command="$2"
+
+    if confirm_action "$action_message" "Are you sure you want to $action_message"; then
+        show_notification "$action_message"
+        sleep 3
+        eval "$command"
+        exit 0
+    fi
+}
+
+# Main menu loop
 while true; do
     ACTION=$(echo -e "Suspend\nKill DWM\nLog out\nReboot\nShutdown\nExit script" | dmenu -p "Choose an action:")
 
     case "$ACTION" in
         Suspend)
-            if confirm_action "The system is now suspending!" "Are you sure you want to suspend the system?"; then
-                show_notification "The system is now suspending!"
-                sleep 3
-                systemctl suspend
-                exit 0
-            fi
+            execute_action "suspend the system!" "systemctl suspend"
             ;;
         Kill\ DWM)
-            if confirm_action "DWM is now being killed!" "Are you sure you want to kill DWM?"; then
-                sleep 3
-                pkill dwm
-            fi
+            execute_action "kill DWM!" "pkill dwm"
             ;;
         Log\ out)
-            if confirm_action "You are now being logged out!" "Are you sure you want to log out?"; then
-                sleep 3
-                pkill -KILL -u $USER
-            fi
+            execute_action "log out!" "pkill -KILL -u $USER"
             ;;
         Reboot)
-            if confirm_action "The system is now rebooting!" "Are you sure you want to reboot the system?"; then
-                sleep 3
-                systemctl reboot
-            fi
+            execute_action "reboot the system!" "systemctl reboot"
             ;;
         Shutdown)
-            if confirm_action "The system is now shutting down!" "Are you sure you want to shut down the system?"; then
-                sleep 3
-                systemctl poweroff
-            fi
+            execute_action "shut down the system!" "systemctl poweroff"
             ;;
         Exit\ script)
             exit 0
             ;;
         *)
+            # Handle invalid selections
+            show_notification "Invalid selection. Please try again."
             ;;
     esac
 done
