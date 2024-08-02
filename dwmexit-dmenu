@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# This script is designed for Arch Linux with systemd.
-# Script created by Nicklas Rudolfsson n@rudolfsson.net
+# This script is designed for Arch Linux, Void Linux (glibc runit), and Debian-based distros with systemd.
+# Script created by Nicklas Rudolfsson https://github.com/nirucon
 
 # Function to show a notification
 show_notification() {
@@ -44,13 +44,27 @@ execute_action() {
     fi
 }
 
+# Determine init system (systemd or runit)
+if command -v systemctl &> /dev/null; then
+    INIT_SYSTEM="systemd"
+elif command -v sv &> /dev/null; then
+    INIT_SYSTEM="runit"
+else
+    show_notification "Unsupported init system"
+    exit 1
+fi
+
 # Main menu loop
 while true; do
     ACTION=$(echo -e "Suspend\nKill DWM\nLog out\nReboot\nShutdown\nExit script" | dmenu -p "Choose an action:")
 
     case "$ACTION" in
         Suspend)
-            execute_action "suspend the system!" "systemctl suspend"
+            if [ "$INIT_SYSTEM" = "systemd" ]; then
+                execute_action "suspend the system!" "systemctl suspend"
+            elif [ "$INIT_SYSTEM" = "runit" ]; then
+                execute_action "suspend the system!" "loginctl suspend"
+            fi
             ;;
         Kill\ DWM)
             execute_action "kill DWM!" "pkill dwm"
@@ -59,10 +73,18 @@ while true; do
             execute_action "log out!" "pkill -KILL -u $USER"
             ;;
         Reboot)
-            execute_action "reboot the system!" "systemctl reboot"
+            if [ "$INIT_SYSTEM" = "systemd" ]; then
+                execute_action "reboot the system!" "systemctl reboot"
+            elif [ "$INIT_SYSTEM" = "runit" ]; then
+                execute_action "reboot the system!" "sudo reboot"
+            fi
             ;;
         Shutdown)
-            execute_action "shut down the system!" "systemctl poweroff"
+            if [ "$INIT_SYSTEM" = "systemd" ]; then
+                execute_action "shut down the system!" "systemctl poweroff"
+            elif [ "$INIT_SYSTEM" = "runit" ]; then
+                execute_action "shut down the system!" "sudo poweroff"
+            fi
             ;;
         Exit\ script)
             exit 0
