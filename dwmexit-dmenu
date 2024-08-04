@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This script is designed for Arch Linux, Void Linux (glibc runit), and Debian-based distros with systemd.
+# This script is designed for Arch Linux (systemd), Void Linux (glibc runit), and Debian-based distros with systemd.
 # Script created by Nicklas Rudolfsson https://github.com/nirucon
 
 # Function to show a notification
@@ -44,54 +44,61 @@ execute_action() {
     fi
 }
 
-# Determine init system (systemd or runit)
-if command -v systemctl &> /dev/null; then
-    INIT_SYSTEM="systemd"
-elif command -v sv &> /dev/null; then
-    INIT_SYSTEM="runit"
-else
-    show_notification "Unsupported init system"
-    exit 1
-fi
+# Function to determine init system (systemd or runit)
+detect_init_system() {
+    if command -v systemctl &> /dev/null; then
+        INIT_SYSTEM="systemd"
+    elif command -v sv &> /dev/null; then
+        INIT_SYSTEM="runit"
+    else
+        show_notification "Unsupported init system"
+        exit 1
+    fi
+}
 
-# Main menu loop
-while true; do
-    ACTION=$(echo -e "Suspend\nKill DWM\nLog out\nReboot\nShutdown\nExit script" | dmenu -p "Choose an action:")
+# Main menu function
+main_menu() {
+    while true; do
+        ACTION=$(echo -e "Suspend\nKill DWM\nLog out\nReboot\nShutdown\nExit script" | dmenu -p "Choose an action:")
 
-    case "$ACTION" in
-        Suspend)
-            if [ "$INIT_SYSTEM" = "systemd" ]; then
-                execute_action "suspend the system!" "systemctl suspend"
-            elif [ "$INIT_SYSTEM" = "runit" ]; then
-                execute_action "suspend the system!" "loginctl suspend"
-            fi
-            ;;
-        Kill\ DWM)
-            execute_action "kill DWM!" "pkill dwm"
-            ;;
-        Log\ out)
-            execute_action "log out!" "pkill -KILL -u $USER"
-            ;;
-        Reboot)
-            if [ "$INIT_SYSTEM" = "systemd" ]; then
-                execute_action "reboot the system!" "systemctl reboot"
-            elif [ "$INIT_SYSTEM" = "runit" ]; then
-                execute_action "reboot the system!" "sudo reboot"
-            fi
-            ;;
-        Shutdown)
-            if [ "$INIT_SYSTEM" = "systemd" ]; then
-                execute_action "shut down the system!" "systemctl poweroff"
-            elif [ "$INIT_SYSTEM" = "runit" ]; then
-                execute_action "shut down the system!" "sudo poweroff"
-            fi
-            ;;
-        Exit\ script)
-            exit 0
-            ;;
-        *)
-            # Handle invalid selections
-            show_notification "Invalid selection. Please try again."
-            ;;
-    esac
-done
+        case "$ACTION" in
+            Suspend)
+                if [ "$INIT_SYSTEM" = "systemd" ]; then
+                    execute_action "suspend the system!" "systemctl suspend"
+                elif [ "$INIT_SYSTEM" = "runit" ]; then
+                    execute_action "suspend the system!" "loginctl suspend"
+                fi
+                ;;
+            Kill\ DWM)
+                execute_action "kill DWM!" "pkill xinit"
+                ;;
+            Log\ out)
+                execute_action "log out!" "pkill -KILL -u $USER"
+                ;;
+            Reboot)
+                if [ "$INIT_SYSTEM" = "systemd" ]; then
+                    execute_action "reboot the system!" "systemctl reboot"
+                elif [ "$INIT_SYSTEM" = "runit" ]; then
+                    execute_action "reboot the system!" "sudo reboot"
+                fi
+                ;;
+            Shutdown)
+                if [ "$INIT_SYSTEM" = "systemd" ]; then
+                    execute_action "shut down the system!" "systemctl poweroff"
+                elif [ "$INIT_SYSTEM" = "runit" ]; then
+                    execute_action "shut down the system!" "sudo poweroff"
+                fi
+                ;;
+            Exit\ script)
+                exit 0
+                ;;
+            *)
+                show_notification "Invalid selection. Please try again."
+                ;;
+        esac
+    done
+}
+
+# Execute the functions
+detect_init_system
+main_menu
