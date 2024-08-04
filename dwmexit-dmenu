@@ -73,7 +73,11 @@ main_menu() {
                 execute_action "kill DWM!" "pkill xinit"
                 ;;
             Log\ out)
-                execute_action "log out!" "pkill -KILL -u $USER"
+                if [ "$INIT_SYSTEM" = "systemd" ]; then
+                    execute_action "log out!" "loginctl terminate-session $(loginctl session-status | head -n 1 | awk '{print $1}')"
+                elif [ "$INIT_SYSTEM" = "runit" ]; then
+                    execute_action "log out!" "pkill -KILL -u $USER"
+                fi
                 ;;
             Reboot)
                 if [ "$INIT_SYSTEM" = "systemd" ]; then
