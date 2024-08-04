@@ -1,5 +1,5 @@
 # dwmexit-dmenu
-This script is designed for Arch Linux systems running the dwm window manager + dmenu and using systemd for service management. It integrates with dmenu to provide a convenient way to handle common system actions directly from your dwm environment.
+This script is designed for Arch, Void and Debian Linux systems running the dwm window manager + dmenu and using systemd for service management. It integrates with dmenu to provide a convenient way to handle common system actions directly from your dwm environment.
 
 ## Features
 
